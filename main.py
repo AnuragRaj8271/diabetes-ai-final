@@ -4,7 +4,6 @@ matplotlib.use('Agg')
 import streamlit as st
 import pandas as pd
 import numpy as np
-import shap
 import matplotlib.pyplot as plt
 import seaborn as sns
 
@@ -19,7 +18,7 @@ from sklearn.metrics import accuracy_score, confusion_matrix
 # -------------------------------
 st.set_page_config(page_title="AI Diabetes Predictor", layout="wide")
 st.title("🧠 AI-Based Diabetes Prediction System")
-st.markdown("### Machine Learning + Explainable AI + Smart Recommendations")
+st.markdown("### Machine Learning + Smart Recommendations + Visualization")
 
 # -------------------------------
 # Load Dataset
@@ -27,8 +26,7 @@ st.markdown("### Machine Learning + Explainable AI + Smart Recommendations")
 @st.cache_data
 def load_data():
     url = "https://raw.githubusercontent.com/plotly/datasets/master/diabetes.csv"
-    df = pd.read_csv(url)
-    return df
+    return pd.read_csv(url)
 
 data = load_data()
 
@@ -110,35 +108,39 @@ if st.sidebar.button("🔍 Predict"):
     # -------------------------------
     # Recommendations
     # -------------------------------
-    st.subheader("💡 AI Recommendations")
+    st.subheader("💡 Smart Recommendations")
 
     rec = []
     if glucose > 140:
-        rec.append("Reduce sugar intake")
+        rec.append("Reduce sugar intake and monitor glucose levels")
     if bmi > 30:
-        rec.append("Increase physical activity")
+        rec.append("Increase physical activity and maintain healthy weight")
     if age > 45:
-        rec.append("Regular health checkups")
+        rec.append("Schedule regular diabetes screening")
     if bp > 90:
-        rec.append("Monitor blood pressure")
+        rec.append("Monitor blood pressure and reduce salt intake")
 
     if rec:
         for r in rec:
             st.write(f"- {r}")
     else:
-        st.write("✔️ Maintain healthy lifestyle")
+        st.write("✔️ Maintain your healthy lifestyle")
 
     # -------------------------------
-    # Explainable AI
+    # Simple Explainability (Safe)
     # -------------------------------
-    st.subheader("🔍 Explainable AI (Why this prediction?)")
+    st.subheader("🔍 Feature Impact (Simple Explanation)")
 
-    explainer = shap.LinearExplainer(lr, X_train)
-    shap_values = explainer(input_scaled)
+    st.write("Key factors affecting your prediction:")
 
-    fig, ax = plt.subplots()
-    shap.plots.waterfall(shap_values[0], show=False)
-    st.pyplot(fig)
+    if glucose > 140:
+        st.write("- High glucose level increases diabetes risk")
+    if bmi > 30:
+        st.write("- High BMI contributes to higher risk")
+    if age > 45:
+        st.write("- Age is a significant risk factor")
+    if bp > 90:
+        st.write("- Elevated blood pressure may increase risk")
 
 # -------------------------------
 # Model Performance
@@ -146,8 +148,8 @@ if st.sidebar.button("🔍 Predict"):
 st.subheader("📈 Model Performance")
 
 col1, col2 = st.columns(2)
-col1.metric("Logistic Regression", f"{lr_acc:.2f}")
-col2.metric("Random Forest", f"{rf_acc:.2f}")
+col1.metric("Logistic Regression Accuracy", f"{lr_acc:.2f}")
+col2.metric("Random Forest Accuracy", f"{rf_acc:.2f}")
 
 # -------------------------------
 # Confusion Matrix
@@ -160,7 +162,7 @@ sns.heatmap(cm, annot=True, fmt="d", cmap="Blues", ax=ax2)
 st.pyplot(fig2)
 
 # -------------------------------
-# Heatmap
+# Correlation Heatmap
 # -------------------------------
 st.subheader("🔥 Feature Correlation")
 

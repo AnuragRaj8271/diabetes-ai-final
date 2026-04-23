@@ -4,5 +4,4 @@ numpy
 scikit-learn
 matplotlib
 seaborn
-tensorflow-cpu
-shap
+shap==0.44.1

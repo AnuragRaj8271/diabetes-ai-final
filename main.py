@@ -12,17 +12,14 @@ from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 from sklearn.linear_model import LogisticRegression
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.metrics import accuracy_score
-
-from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import Dense
+from sklearn.metrics import accuracy_score, confusion_matrix
 
 # -------------------------------
 # Page Setup
 # -------------------------------
-st.set_page_config(page_title="AI Diabetes Predictor+", layout="wide")
-st.title("🧠 AI Diabetes Prediction System (ML + Deep Learning)")
-st.markdown("### Logistic Regression + Random Forest + ANN + Explainable AI")
+st.set_page_config(page_title="AI Diabetes Predictor", layout="wide")
+st.title("🧠 AI-Based Diabetes Prediction System")
+st.markdown("### Machine Learning + Explainable AI + Smart Recommendations")
 
 # -------------------------------
 # Load Dataset
@@ -36,7 +33,7 @@ def load_data():
 data = load_data()
 
 # -------------------------------
-# Data Cleaning (Important)
+# Data Cleaning
 # -------------------------------
 cols = ["Glucose", "BloodPressure", "SkinThickness", "Insulin", "BMI"]
 for col in cols:
@@ -56,7 +53,7 @@ X_train, X_test, y_train, y_test = train_test_split(
 )
 
 # -------------------------------
-# ML Models
+# Models
 # -------------------------------
 lr = LogisticRegression()
 rf = RandomForestClassifier()
@@ -66,20 +63,6 @@ rf.fit(X_train, y_train)
 
 lr_acc = accuracy_score(y_test, lr.predict(X_test))
 rf_acc = accuracy_score(y_test, rf.predict(X_test))
-
-# -------------------------------
-# Deep Learning Model (ANN)
-# -------------------------------
-ann = Sequential()
-ann.add(Dense(16, activation='relu', input_dim=X_train.shape[1]))
-ann.add(Dense(8, activation='relu'))
-ann.add(Dense(1, activation='sigmoid'))
-
-ann.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
-ann.fit(X_train, y_train, epochs=30, batch_size=10, verbose=0)
-
-ann_pred = (ann.predict(X_test) > 0.5).astype(int)
-ann_acc = accuracy_score(y_test, ann_pred)
 
 # -------------------------------
 # Sidebar Input
@@ -105,29 +88,22 @@ if st.sidebar.button("🔍 Predict"):
 
     st.subheader("📊 Prediction Result")
 
-    # Logistic Regression
-    lr_prob = lr.predict_proba(input_scaled)[0][1]
+    prob = lr.predict_proba(input_scaled)[0][1]
 
-    # ANN Prediction
-    ann_prob = ann.predict(input_scaled)[0][0]
-
-    # Final Output
-    final_prob = (lr_prob + ann_prob) / 2
-
-    if final_prob > 0.5:
+    if prob > 0.5:
         st.error("⚠️ High Diabetes Risk")
     else:
         st.success("✅ Low Diabetes Risk")
 
-    st.write(f"### 🔢 Final Risk Score: {round(final_prob*100,2)}%")
+    st.write(f"### 🔢 Risk Score: {round(prob*100,2)}%")
 
     # Risk Level
-    if final_prob < 0.3:
-        level = "Low"
-    elif final_prob < 0.7:
-        level = "Medium"
+    if prob < 0.3:
+        level = "🟢 Low"
+    elif prob < 0.7:
+        level = "🟡 Medium"
     else:
-        level = "High"
+        level = "🔴 High"
 
     st.write(f"### 📌 Risk Level: {level}")
 
@@ -153,9 +129,9 @@ if st.sidebar.button("🔍 Predict"):
         st.write("✔️ Maintain healthy lifestyle")
 
     # -------------------------------
-    # Explainable AI (SHAP)
+    # Explainable AI
     # -------------------------------
-    st.subheader("🔍 Explainable AI")
+    st.subheader("🔍 Explainable AI (Why this prediction?)")
 
     explainer = shap.LinearExplainer(lr, X_train)
     shap_values = explainer(input_scaled)
@@ -165,20 +141,29 @@ if st.sidebar.button("🔍 Predict"):
     st.pyplot(fig)
 
 # -------------------------------
-# Model Comparison
+# Model Performance
 # -------------------------------
 st.subheader("📈 Model Performance")
 
-col1, col2, col3 = st.columns(3)
+col1, col2 = st.columns(2)
 col1.metric("Logistic Regression", f"{lr_acc:.2f}")
 col2.metric("Random Forest", f"{rf_acc:.2f}")
-col3.metric("ANN (Deep Learning)", f"{ann_acc:.2f}")
+
+# -------------------------------
+# Confusion Matrix
+# -------------------------------
+st.subheader("📉 Confusion Matrix")
+
+cm = confusion_matrix(y_test, lr.predict(X_test))
+fig2, ax2 = plt.subplots()
+sns.heatmap(cm, annot=True, fmt="d", cmap="Blues", ax=ax2)
+st.pyplot(fig2)
 
 # -------------------------------
 # Heatmap
 # -------------------------------
 st.subheader("🔥 Feature Correlation")
 
-fig2, ax2 = plt.subplots()
-sns.heatmap(data.corr(), annot=True, cmap="coolwarm", ax=ax2)
-st.pyplot(fig2)
+fig3, ax3 = plt.subplots(figsize=(8,6))
+sns.heatmap(data.corr(), annot=True, cmap="coolwarm", ax=ax3)
+st.pyplot(fig3)
